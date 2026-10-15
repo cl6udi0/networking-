@@ -5,7 +5,8 @@ namespace whois
 {
     public class User
     {
-        static Dictionary<string, User> DataBase = new Dictionary<string, User>
+        // Public so Program.cs can access DataBase directly
+        public static Dictionary<string, User> DataBase = new Dictionary<string, User>(StringComparer.OrdinalIgnoreCase)
         {
             {
                 "cssbct",
@@ -23,103 +24,103 @@ namespace whois
             }
         };
 
-        public string UserID { get; set; }
-        public string Surname { get; set; }
-        public string Fornames { get; set; }
-        public string Title { get; set; }
-        public string Position { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Location { get; set; }
+        // Properties (cleaned duplicate definitions)
+        public string UserID { get; set; } = string.Empty;
 
-        public static void Dump(string ID)
+        // Alias ID to UserID so both 'user.ID' and 'user.UserID' work seamlessly
+        public string ID
         {
-            Console.WriteLine($"UserID={DataBase[ID].UserID}");
-            Console.WriteLine($"Surname={DataBase[ID].Surname}");
-            Console.WriteLine($"Fornames={DataBase[ID].Fornames}");
-            Console.WriteLine($"Title={DataBase[ID].Title}");
-            Console.WriteLine($"Position={DataBase[ID].Position}");
-            Console.WriteLine($"Phone={DataBase[ID].Phone}");
-            Console.WriteLine($"Email={DataBase[ID].Email}");
-            Console.WriteLine($"location={DataBase[ID].Location}");
+            get => UserID;
+            set => UserID = value;
         }
 
-        public static void Lookup(string ID, string field)
+        public string Surname { get; set; } = string.Empty;
+        public string Fornames { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+
+        public static void Dump(string id)
         {
-            string result = null;
-
-            switch (field)
+            if (DataBase.TryGetValue(id, out var user))
             {
-                case "location":
-                    result = DataBase[ID].Location;
-                    break;
+                Console.WriteLine($"UserID={user.UserID}");
+                Console.WriteLine($"Surname={user.Surname}");
+                Console.WriteLine($"Fornames={user.Fornames}");
+                Console.WriteLine($"Title={user.Title}");
+                Console.WriteLine($"Position={user.Position}");
+                Console.WriteLine($"Phone={user.Phone}");
+                Console.WriteLine($"Email={user.Email}");
+                Console.WriteLine($"location={user.Location}");
+            }
+            else
+            {
+                Console.WriteLine($"User '{id}' not found.");
+            }
+        }
 
-                case "UserID":
-                    result = DataBase[ID].UserID;
-                    break;
-
-                case "Surname":
-                    result = DataBase[ID].Surname;
-                    break;
-
-                case "Fornames":
-                    result = DataBase[ID].Fornames;
-                    break;
-
-                case "Title":
-                    result = DataBase[ID].Title;
-                    break;
-
-                case "Phone":
-                    result = DataBase[ID].Phone;
-                    break;
-
-                case "Position":
-                    result = DataBase[ID].Position;
-                    break;
-
-                case "Email":
-                    result = DataBase[ID].Email;
-                    break;
+        public static void Lookup(string id, string? field)
+        {
+            if (!DataBase.TryGetValue(id, out var user))
+            {
+                Console.WriteLine($"User '{id}' not found.");
+                return;
             }
 
-            Console.WriteLine(result);
+            string? result = field?.ToLower() switch
+            {
+                "location" => user.Location,
+                "userid" => user.UserID,
+                "surname" => user.Surname,
+                "fornames" => user.Fornames,
+                "title" => user.Title,
+                "phone" => user.Phone,
+                "position" => user.Position,
+                "email" => user.Email,
+                _ => null
+            };
+
+            Console.WriteLine(result ?? "Field unknown");
         }
 
-        public static void Update(string ID, string field, string update)
+        public static void Update(string id, string? field, string updateValue)
         {
-            switch (field)
+            if (!DataBase.TryGetValue(id, out var user))
+            {
+                user = new User { UserID = id };
+                DataBase[id] = user;
+            }
+
+            switch (field?.ToLower())
             {
                 case "location":
-                    DataBase[ID].Location = update;
+                    user.Location = updateValue;
                     break;
-
-                case "UserID":
-                    DataBase[ID].UserID = update;
+                case "userid":
+                    user.UserID = updateValue;
                     break;
-
-                case "Surname":
-                    DataBase[ID].Surname = update;
+                case "surname":
+                    user.Surname = updateValue;
                     break;
-
-                case "Fornames":
-                    DataBase[ID].Fornames = update;
+                case "fornames":
+                    user.Fornames = updateValue;
                     break;
-
-                case "Title":
-                    DataBase[ID].Title = update;
+                case "title":
+                    user.Title = updateValue;
                     break;
-
-                case "Phone":
-                    DataBase[ID].Phone = update;
+                case "phone":
+                    user.Phone = updateValue;
                     break;
-
-                case "Position":
-                    DataBase[ID].Position = update;
+                case "position":
+                    user.Position = updateValue;
                     break;
-
-                case "Email":
-                    DataBase[ID].Email = update;
+                case "email":
+                    user.Email = updateValue;
+                    break;
+                default:
+                    user.Location = updateValue; // Fallback default
                     break;
             }
 
